@@ -1,3 +1,4 @@
+import { type Submission } from '@conform-to/react'
 import { invariant } from '@epic-web/invariant'
 import { json, redirect } from '@remix-run/node'
 import { prisma } from '#app/utils/db.server.ts'
@@ -20,6 +21,47 @@ export async function handleVerification({ submission }: VerifyFunctionArgs) {
 	if (!user) {
 		return json(
 			{ result: submission.reply({ fieldErrors: { code: ['Invalid code'] } }) },
+			{ status: 400 },
+		)
+	}
+
+	const verifySession = await verifySessionStorage.getSession()
+	verifySession.set(resetPasswordUsernameSessionKey, user.username)
+	return redirect('/reset-password', {
+		headers: {
+			'set-cookie': await verifySessionStorage.commitSession(verifySession),
+		},
+	})
+}
+
+export async function handleResetPasswordWithoutVerification(
+	submission: Submission<
+		{
+			usernameOrEmail: string
+		},
+		string[],
+		{
+			usernameOrEmail: string
+		}
+	>,
+) {
+	invariant(
+		submission.status === 'success',
+		'Submission should be successful by now',
+	)
+	const target = submission.value.usernameOrEmail
+	const user = await prisma.user.findFirst({
+		where: { OR: [{ email: target }, { username: target }] },
+		select: { email: true, username: true },
+	})
+
+	if (!user) {
+		return json(
+			{
+				result: submission.reply({
+					fieldErrors: { code: ['Something went wrong'] },
+				}),
+			},
 			{ status: 400 },
 		)
 	}

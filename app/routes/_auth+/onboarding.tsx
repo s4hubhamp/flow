@@ -118,11 +118,13 @@ export async function action({ request }: ActionFunctionArgs) {
 		await verifySessionStorage.destroySession(verifySession),
 	)
 
-	return redirectWithToast(
+	const res = redirectWithToast(
 		safeRedirect(redirectTo),
 		{ title: 'Welcome', description: 'Thanks for signing up!' },
 		{ headers },
 	)
+
+	return res
 }
 
 export const meta: MetaFunction = () => {

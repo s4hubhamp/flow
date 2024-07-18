@@ -22,6 +22,7 @@ import { sendEmail } from '#app/utils/email.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { useIsPending } from '#app/utils/misc.tsx'
 import { EmailSchema } from '#app/utils/user-validation.ts'
+import { handleOnboardingWithoutVerification } from './onboarding.server.ts'
 import { prepareVerification } from './verify.server.ts'
 
 const SignupSchema = z.object({
@@ -50,38 +51,15 @@ export async function action({ request }: ActionFunctionArgs) {
 		}),
 		async: true,
 	})
+
 	if (submission.status !== 'success') {
 		return json(
 			{ result: submission.reply() },
 			{ status: submission.status === 'error' ? 400 : 200 },
 		)
 	}
-	const { email } = submission.value
-	const { verifyUrl, redirectTo, otp } = await prepareVerification({
-		period: 10 * 60,
-		request,
-		type: 'onboarding',
-		target: email,
-	})
 
-	const response = await sendEmail({
-		to: email,
-		subject: `Welcome to Epic Notes!`,
-		react: <SignupEmail onboardingUrl={verifyUrl.toString()} otp={otp} />,
-	})
-
-	if (response.status === 'success') {
-		return redirect(redirectTo.toString())
-	} else {
-		return json(
-			{
-				result: submission.reply({ formErrors: [response.error.message] }),
-			},
-			{
-				status: 500,
-			},
-		)
-	}
+	return handleOnboardingWithoutVerification(submission.value.email)
 }
 
 export function SignupEmail({
@@ -165,7 +143,7 @@ export default function SignupRoute() {
 						Submit
 					</StatusButton>
 				</Form>
-				<ul className="mt-5 flex flex-col gap-5 border-b-2 border-t-2 border-border py-3">
+				{/* <ul className="mt-5 flex flex-col gap-5 border-b-2 border-t-2 border-border py-3">
 					{providerNames.map(providerName => (
 						<li key={providerName}>
 							<ProviderConnectionForm
@@ -175,7 +153,7 @@ export default function SignupRoute() {
 							/>
 						</li>
 					))}
-				</ul>
+				</ul> */}
 			</div>
 		</div>
 	)

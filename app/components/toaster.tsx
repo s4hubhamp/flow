@@ -9,6 +9,7 @@ export function useToast(toast?: Toast | null) {
 				showToast[toast.type](toast.title, {
 					id: toast.id,
 					description: toast.description,
+					position: 'bottom-right',
 				})
 			}, 0)
 		}

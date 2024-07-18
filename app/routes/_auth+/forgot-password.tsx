@@ -17,6 +17,7 @@ import { prisma } from '#app/utils/db.server.ts'
 import { sendEmail } from '#app/utils/email.server.ts'
 import { checkHoneypot } from '#app/utils/honeypot.server.ts'
 import { EmailSchema, UsernameSchema } from '#app/utils/user-validation.ts'
+import { handleResetPasswordWithoutVerification } from './reset-password.server.ts'
 import { prepareVerification } from './verify.server.ts'
 
 const ForgotPasswordSchema = z.object({
@@ -54,36 +55,39 @@ export async function action({ request }: ActionFunctionArgs) {
 			{ status: submission.status === 'error' ? 400 : 200 },
 		)
 	}
-	const { usernameOrEmail } = submission.value
 
-	const user = await prisma.user.findFirstOrThrow({
-		where: { OR: [{ email: usernameOrEmail }, { username: usernameOrEmail }] },
-		select: { email: true, username: true },
-	})
+	return handleResetPasswordWithoutVerification(submission)
 
-	const { verifyUrl, redirectTo, otp } = await prepareVerification({
-		period: 10 * 60,
-		request,
-		type: 'reset-password',
-		target: usernameOrEmail,
-	})
+	// const { usernameOrEmail } = submission.value
 
-	const response = await sendEmail({
-		to: user.email,
-		subject: `Epic Notes Password Reset`,
-		react: (
-			<ForgotPasswordEmail onboardingUrl={verifyUrl.toString()} otp={otp} />
-		),
-	})
+	// const user = await prisma.user.findFirstOrThrow({
+	// 	where: { OR: [{ email: usernameOrEmail }, { username: usernameOrEmail }] },
+	// 	select: { email: true, username: true },
+	// })
 
-	if (response.status === 'success') {
-		return redirect(redirectTo.toString())
-	} else {
-		return json(
-			{ result: submission.reply({ formErrors: [response.error.message] }) },
-			{ status: 500 },
-		)
-	}
+	// const { verifyUrl, redirectTo, otp } = await prepareVerification({
+	// 	period: 10 * 60,
+	// 	request,
+	// 	type: 'reset-password',
+	// 	target: usernameOrEmail,
+	// })
+
+	// const response = await sendEmail({
+	// 	to: user.email,
+	// 	subject: `Epic Notes Password Reset`,
+	// 	react: (
+	// 		<ForgotPasswordEmail onboardingUrl={verifyUrl.toString()} otp={otp} />
+	// 	),
+	// })
+
+	// if (response.status === 'success') {
+	// 	return redirect(redirectTo.toString())
+	// } else {
+	// 	return json(
+	// 		{ result: submission.reply({ formErrors: [response.error.message] }) },
+	// 		{ status: 500 },
+	// 	)
+	// }
 }
 
 function ForgotPasswordEmail({

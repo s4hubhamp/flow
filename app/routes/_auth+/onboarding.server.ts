@@ -17,3 +17,15 @@ export async function handleVerification({ submission }: VerifyFunctionArgs) {
 		},
 	})
 }
+
+export async function handleOnboardingWithoutVerification(
+	onboardingEmail: string,
+) {
+	const verifySession = await verifySessionStorage.getSession()
+	verifySession.set(onboardingEmailSessionKey, onboardingEmail)
+	return redirect('/onboarding', {
+		headers: {
+			'set-cookie': await verifySessionStorage.commitSession(verifySession),
+		},
+	})
+}

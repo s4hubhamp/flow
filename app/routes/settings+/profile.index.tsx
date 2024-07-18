@@ -132,7 +132,7 @@ export default function EditUserProfile() {
 
 			<div className="col-span-6 my-6 h-1 border-b-[1.5px] border-foreground" />
 			<div className="col-span-full flex flex-col gap-6">
-				<div>
+				{/* <div>
 					<Link to="change-email">
 						<Icon name="envelope-closed">
 							Change email from {data.user.email}
@@ -147,7 +147,7 @@ export default function EditUserProfile() {
 							<Icon name="lock-open-1">Enable 2FA</Icon>
 						)}
 					</Link>
-				</div>
+				</div> */}
 				<div>
 					<Link to={data.hasPassword ? 'password' : 'password/create'}>
 						<Icon name="dots-horizontal">
@@ -155,12 +155,12 @@ export default function EditUserProfile() {
 						</Icon>
 					</Link>
 				</div>
-				<div>
+				{/* <div>
 					<Link to="connections">
 						<Icon name="link-2">Manage connections</Icon>
 					</Link>
-				</div>
-				<div>
+				</div> */}
+				{/* <div>
 					<Link
 						reloadDocument
 						download="my-epic-notes-data.json"
@@ -168,9 +168,9 @@ export default function EditUserProfile() {
 					>
 						<Icon name="download">Download your data</Icon>
 					</Link>
-				</div>
+				</div> */}
 				<SignOutOfSessions />
-				<DeleteData />
+				{/* <DeleteData /> */}
 			</div>
 		</div>
 	)
